@@ -6,5 +6,4 @@ type Login struct {
 	CSRFToken      string
 }
 
-// TODO: create Users into JSON
 var Users = map[string]Login{}

@@ -4,22 +4,47 @@ import (
 	"fmt"
 	"net/http"
 	"user/vault/auth"
+
+	"github.com/gin-gonic/gin"
 )
 
-func login(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("login api")
-
-	if r.Method != http.MethodPost {
-		er := http.StatusMethodNotAllowed
-		http.Error(w, "Invalid method", er)
+func Signup(c *gin.Context) {
+	username := c.Request.FormValue("username")
+	password := c.Request.FormValue("password")
+	if len(password) < 8 {
+		er := http.StatusNotAcceptable
+		http.Error(c.Writer, "Invalid password", er)
 		return
 	}
 
-	username := r.FormValue("username")
-	password := r.FormValue("password")
+	if username == "dungeon_master" {
+		// dm signup
+		// add new user
+		hashedPassword, _ := auth.HashPassword(password)
+		if hashedPassword != auth.Users["dungeon_master"].HashedPassword {
+			er := http.StatusConflict
+			http.Error(c.Writer, "Wrong password", er)
+			return
+		}
+	} else {
+		// player auth
+		// check player exist in users
+		if _, ok := auth.Users[username]; !ok {
+			er := http.StatusConflict
+			http.Error(c.Writer, "Player not exist", er)
+			return
+		}
+	}
+}
+
+func Login(c *gin.Context) {
+	fmt.Println("login api")
+
+	username := c.Request.FormValue("username")
+	password := c.Request.FormValue("password")
 	if len(password) < 8 {
 		er := http.StatusNotAcceptable
-		http.Error(w, "Invalid password", er)
+		http.Error(c.Writer, "Invalid password", er)
 		return
 	}
 
@@ -29,7 +54,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 		hashedPassword, _ := auth.HashPassword(password)
 		if hashedPassword != auth.Users["dungeon_master"].HashedPassword {
 			er := http.StatusConflict
-			http.Error(w, "Wrong password", er)
+			http.Error(c.Writer, "Wrong password", er)
 			return
 		}
 	} else {
@@ -37,9 +62,8 @@ func login(w http.ResponseWriter, r *http.Request) {
 		// check player exist in users
 		if _, ok := auth.Users[username]; !ok {
 			er := http.StatusConflict
-			http.Error(w, "Player not exist", er)
+			http.Error(c.Writer, "Player not exist", er)
 			return
 		}
 	}
-
 }
