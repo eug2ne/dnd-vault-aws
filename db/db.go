@@ -1,24 +1,26 @@
 package db
 
-type User struct {
-	username string
-	password string
-	usertype string
+type UserData struct {
+	Username string
+	Password string
+	Usertype string
 }
 
-var DB = []User{
-	{username: "player1",
-		password: "letsplaydnd1",
-		usertype: "player"},
-	{username: "player2",
-		password: "letsplaydnd2",
-		usertype: "player"},
-	{username: "player3",
-		password: "letsplaydnd1",
-		usertype: "player"},
-	{username: "player4",
-		password: "letsplaydnd1",
-		usertype: "player"},
-	{username: "dungeon_master1",
-		password: "dmingthegame1",
-		usertype: "player"}}
+// temp db (default value)
+var DB = []UserData{
+	{Username: "player1",
+		Password: "letsplaydnd1",
+		Usertype: "player"},
+	{Username: "player2",
+		Password: "letsplaydnd2",
+		Usertype: "player"},
+	{Username: "player3",
+		Password: "letsplaydnd1",
+		Usertype: "player"},
+	{Username: "player4",
+		Password: "letsplaydnd1",
+		Usertype: "player"},
+	{Username: "dungeon_master1",
+		Password: "dmingthegame1",
+		Usertype: "dm"},
+}

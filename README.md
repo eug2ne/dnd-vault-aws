@@ -16,4 +16,13 @@ Toy project creating a DnD vault for a DnD group with the following features usi
 		- Players can look into their process easily
 
 ## Current Progress
-- Creating Player/DM auth
+### In progress
+- Fetching data for dm/player
+
+### Finished
+- Player/DM auth
+  - login+register api
+  - authorization middleware
+
+### BUG
+- **Authorize function producing AuthError even when including csrf token in header**

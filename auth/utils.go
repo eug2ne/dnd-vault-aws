@@ -1,6 +1,10 @@
 package auth
 
 import (
+	"crypto/rand"
+	"encoding/base64"
+	"log"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -9,6 +13,16 @@ func HashPassword(password string) (string, error) {
 	return string(bytes), err
 }
 
-func CreateSessionToken() {
-	// TODO: create session token for user
+func CheckPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
+}
+
+func CreateToken(length int) string {
+	// create session token for user
+	bytes := make([]byte, length)
+	if _, err := rand.Read(bytes); err != nil {
+		log.Fatal("Failed to generate token: %v", err)
+	}
+	return base64.URLEncoding.EncodeToString(bytes)
 }

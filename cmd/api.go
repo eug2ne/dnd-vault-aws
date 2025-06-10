@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"runtime/debug"
 	"user/vault/api"
+	"user/vault/auth"
 
 	"github.com/gin-gonic/gin"
 )
@@ -32,6 +33,22 @@ func recoveryMiddleware() gin.HandlerFunc {
 	}
 }
 
+func authorizeMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// run authorize func
+		var err error
+		defer func() {
+			err = auth.Authorize(c)
+		}()
+
+		if err != nil {
+			// authorization failure
+			er := http.StatusUnauthorized
+			http.Error(c.Writer, "Authorization failed: User has no authorization to access vault data", er)
+		}
+	}
+}
+
 func NewAPIServer(new_addr string, new_db *sql.DB) *APIServer {
 	return &APIServer{addr: new_addr, db: new_db}
 }
@@ -42,9 +59,18 @@ func (s *APIServer) Run() error {
 	router.Use(recoveryMiddleware())
 	// create subrouter
 	api_router := router.Group("/api")
+	dm_router := router.Group("/dm")
+	player_router := router.Group("/player")
+
+	// add middleware to subrouter
+	dm_router.Use(authorizeMiddleware())
+	player_router.Use(authorizeMiddleware())
 
 	// add handlers tp subrouter
 	api.RegisterRoutes(api_router)
+
+	// TODO: need to set path + add handler to dm_router, player_router
+	// TODO: or just set dm/player path to router?
 
 	return router.Run(":8080")
 }

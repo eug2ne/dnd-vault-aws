@@ -5,5 +5,8 @@ import (
 )
 
 func RegisterRoutes(router *gin.RouterGroup) {
-	router.GET("/login", Login)
+	// add api paths
+	router.POST("/login", Login)
+	router.POST("/register", Register)
+	router.POST("/logout", Logout)
 }
