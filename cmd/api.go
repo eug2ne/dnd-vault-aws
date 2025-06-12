@@ -2,11 +2,13 @@ package cmd
 
 import (
 	"database/sql"
+	"errors"
 	"log"
 	"net/http"
 	"runtime/debug"
 	"user/vault/api"
 	"user/vault/auth"
+	"user/vault/cmd/user"
 
 	"github.com/gin-gonic/gin"
 )
@@ -33,19 +35,26 @@ func recoveryMiddleware() gin.HandlerFunc {
 	}
 }
 
+func errorMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		SimpleError := errors.New("Very Simple Error")
+		c.Error(SimpleError)
+	}
+}
+
 func authorizeMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// run authorize func
 		var err error
 		defer func() {
 			err = auth.Authorize(c)
-		}()
 
-		if err != nil {
-			// authorization failure
-			er := http.StatusUnauthorized
-			http.Error(c.Writer, "Authorization failed: User has no authorization to access vault data", er)
-		}
+			if err != nil {
+				// authorization failure
+				er := http.StatusUnauthorized
+				http.Error(c.Writer, "Authorization failed: User has no authorization to access vault data", er)
+			}
+		}()
 	}
 }
 
@@ -59,15 +68,16 @@ func (s *APIServer) Run() error {
 	router.Use(recoveryMiddleware())
 	// create subrouter
 	api_router := router.Group("/api")
-	dm_router := router.Group("/dm")
-	player_router := router.Group("/player")
+	user_router := router.Group("/user")
+	bot_router := router.Group("/bots")
 
 	// add middleware to subrouter
-	dm_router.Use(authorizeMiddleware())
-	player_router.Use(authorizeMiddleware())
+	user_router.Use(authorizeMiddleware(), errorMiddleware())
+	bot_router.Use(authorizeMiddleware())
 
 	// add handlers tp subrouter
 	api.RegisterRoutes(api_router)
+	user.RegisterRoutes(user_router)
 
 	// TODO: need to set path + add handler to dm_router, player_router
 	// TODO: or just set dm/player path to router?

@@ -10,7 +10,7 @@ import (
 func Logout(c *gin.Context) {
 	if err := auth.Authorize(c); err != nil {
 		er := http.StatusUnauthorized
-		http.Error(c.Writer, "Authorization failed: User has no authorization", er)
+		http.Error(c.Writer, err.Error(), er)
 		return
 	}
 

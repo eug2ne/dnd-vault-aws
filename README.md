@@ -21,8 +21,7 @@ Toy project creating a DnD vault for a DnD group with the following features usi
 
 ### Finished
 - Player/DM auth
-  - login+register api
+  - register+login+logout api
   - authorization middleware
 
 ### BUG
-- **Authorize function producing AuthError even when including csrf token in header**

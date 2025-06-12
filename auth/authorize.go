@@ -2,7 +2,7 @@ package auth
 
 import (
 	"errors"
-	"fmt"
+	"net/url"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,22 +13,32 @@ func Authorize(c *gin.Context) error {
 	username := c.Request.FormValue("username")
 	userdata := FindUserData(username)
 	if userdata.Usertype == "nonexistant" {
-		return AuthError
+		return c.Error(AuthError)
 	}
 
-	// TODO: (BUG) authorize producing AuthError even when including csrf token in header
 	// get session token from cookie
 	st, err := c.Request.Cookie("session_token")
-	if err != nil || st.Value == "" || st.Value != Users[username].SessionToken {
-		return AuthError
+	session, _ := url.QueryUnescape(st.Value)
+	if err != nil || session == "" || session != Users[username].SessionToken {
+		return c.Error(AuthError)
 	}
 
 	// get csrf token from header
-	csrf := c.Request.Header.Get("X-CSRF-TOKEN")
-	fmt.Println(csrf)
+	ct := c.Request.Header.Get("X-CSRF-TOKEN")
+	csrf, _ := url.QueryUnescape(ct)
 	if csrf != Users[username].CSRFToken || csrf == "" {
-		return AuthError
+		return c.Error(AuthError)
 	}
 
 	return nil
+}
+
+func SearchAuthError(c *gin.Context) bool {
+	for i := 0; i < len(c.Errors); i++ {
+		if c.Errors[i].Error() == "Authorization failed" {
+			return true
+		}
+	}
+
+	return false
 }
