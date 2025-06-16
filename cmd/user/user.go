@@ -2,7 +2,7 @@ package user
 
 import (
 	"net/http"
-	"user/vault/auth"
+	"user/vault/internal/auth"
 
 	"github.com/gin-gonic/gin"
 )

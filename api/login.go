@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"time"
-	"user/vault/auth"
+	"user/vault/internal/auth"
 
 	"github.com/gin-gonic/gin"
 )
@@ -17,7 +17,7 @@ func Login(c *gin.Context) {
 
 	userdata := auth.FindUserData(username)
 	// check uesr exist in db
-	if userdata.Usertype == "nonexistant" {
+	if userdata.UserType == "nonexistant" {
 		er := http.StatusUnauthorized
 		http.Error(c.Writer, "Invalid player/DM", er)
 		return

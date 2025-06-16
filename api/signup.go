@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Register(c *gin.Context) {
+func SignUp(c *gin.Context) {
 	// register individual password for each user
 	username := c.Request.FormValue("username")
 	password := c.Request.FormValue("password")

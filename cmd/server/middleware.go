@@ -1,22 +1,14 @@
-package cmd
+package main
 
 import (
-	"database/sql"
 	"errors"
 	"log"
 	"net/http"
 	"runtime/debug"
-	"user/vault/api"
-	"user/vault/auth"
-	"user/vault/cmd/user"
+	"user/vault/internal/auth"
 
 	"github.com/gin-gonic/gin"
 )
-
-type APIServer struct {
-	addr string
-	db   *sql.DB
-}
 
 func recoveryMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -56,31 +48,4 @@ func authorizeMiddleware() gin.HandlerFunc {
 			}
 		}()
 	}
-}
-
-func NewAPIServer(new_addr string, new_db *sql.DB) *APIServer {
-	return &APIServer{addr: new_addr, db: new_db}
-}
-
-func (s *APIServer) Run() error {
-	// create router
-	router := gin.Default()
-	router.Use(recoveryMiddleware())
-	// create subrouter
-	api_router := router.Group("/api")
-	user_router := router.Group("/user")
-	bot_router := router.Group("/bots")
-
-	// add middleware to subrouter
-	user_router.Use(authorizeMiddleware(), errorMiddleware())
-	bot_router.Use(authorizeMiddleware())
-
-	// add handlers tp subrouter
-	api.RegisterRoutes(api_router)
-	user.RegisterRoutes(user_router)
-
-	// TODO: need to set path + add handler to dm_router, player_router
-	// TODO: or just set dm/player path to router?
-
-	return router.Run(":8080")
 }

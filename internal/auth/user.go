@@ -1,19 +1,11 @@
 package auth
 
 import (
-	"user/vault/db"
+	"user/vault/internal/db"
+	"user/vault/internal/user"
 )
 
-type Login struct {
-	HashedPassword string
-	SessionToken   string
-	CSRFToken      string
-}
-
-// stores login user data
-var Users = map[string]Login{}
-
-func FindUserData(username string) *db.UserData {
+func FindUserData(username string) *user.UserData {
 	// check if user data exist in db
 	var u_index int = -1
 	for i := 0; i < len(db.DB); i++ {
