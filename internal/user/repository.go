@@ -3,6 +3,7 @@ package user
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -23,13 +24,14 @@ func NewRepository(db *dynamodb.Client) *Repository {
 }
 
 func (r *Repository) AddUser(ctx *gin.Context, user UserData) error {
-	// TODO: add new user data to db
+	// add new user data to db
 	item, err := attributevalue.MarshalMap(user)
 	if err != nil {
 		panic(err)
 	}
 	_, err = r.DB.PutItem(ctx, &dynamodb.PutItemInput{
-		TableName: aws.String(r.TableName), Item: item,
+		TableName: aws.String(r.TableName),
+		Item:      item,
 	})
 	if err != nil {
 		log.Printf("Couldn't add item to table. Here's why: %v\n", err)
@@ -38,7 +40,7 @@ func (r *Repository) AddUser(ctx *gin.Context, user UserData) error {
 }
 
 func (r *Repository) UpdateUser(ctx *gin.Context, user UserData) (map[string]map[string]interface{}, error) {
-	// TODO: update user data in db
+	// update user data in db
 	var err error
 	var response *dynamodb.UpdateItemOutput
 	var attributeMap map[string]map[string]interface{}
@@ -68,10 +70,11 @@ func (r *Repository) UpdateUser(ctx *gin.Context, user UserData) (map[string]map
 	return attributeMap, err
 }
 
-func (r *Repository) GetUser(ctx *gin.Context, user_id string) (UserData, error) {
-	user := UserData{UserID: user_id}
+func (r *Repository) GetUserByID(ctx *gin.Context, id string) (*UserData, error) {
+	user := UserData{UserID: id}
 	response, err := r.DB.GetItem(ctx, &dynamodb.GetItemInput{
-		Key: user.GetKey(), TableName: aws.String(r.TableName),
+		Key:       user.GetKey(),
+		TableName: aws.String(r.TableName),
 	})
 	if err != nil {
 		log.Printf("Couldn't get info about %v. Here's why: %v\n", user.UserName, err)
@@ -81,12 +84,44 @@ func (r *Repository) GetUser(ctx *gin.Context, user_id string) (UserData, error)
 			log.Printf("Couldn't unmarshal response. Here's why: %v\n", err)
 		}
 	}
-	return user, err
+	return &user, err
+}
+
+func (r *Repository) GetUserbyEmail(ctx *gin.Context, email string) (*UserData, error) {
+	gsiPK := "EMAIL#" + email
+
+	input := &dynamodb.QueryInput{
+		TableName:              aws.String(r.TableName),
+		IndexName:              aws.String("GSI1"),
+		KeyConditionExpression: aws.String("GSIPK = :gsiPK"),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":gsiPK": &types.AttributeValueMemberS{Value: gsiPK},
+		},
+		Limit: aws.Int32(1),
+	}
+
+	result, err := r.DB.Query(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(result.Items) == 0 {
+		return nil, fmt.Errorf("user not found")
+	}
+
+	var user UserData
+	err = attributevalue.UnmarshalMap(result.Items[0], &user)
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
 }
 
 func (r *Repository) DeleteUser(ctx context.Context, user UserData) error {
 	_, err := r.DB.DeleteItem(ctx, &dynamodb.DeleteItemInput{
-		TableName: aws.String(r.TableName), Key: user.GetKey(),
+		TableName: aws.String(r.TableName),
+		Key:       user.GetKey(),
 	})
 	if err != nil {
 		log.Printf("Couldn't delete %v from the table. Here's why: %v\n", user.UserName, err)

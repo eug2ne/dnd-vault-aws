@@ -10,7 +10,7 @@ import (
 var AuthError error = errors.New("Authorization failed")
 
 func Authorize(c *gin.Context) error {
-	username := c.Request.FormValue("username")
+	userid := c.Request.FormValue("id")
 	userdata := FindUserData(username)
 	if userdata.Usertype == "nonexistant" {
 		return c.Error(AuthError)

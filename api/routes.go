@@ -4,9 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// / What should I add in the root api group??? ///
 func RegisterRoutes(router *gin.RouterGroup) {
 	// add api paths
-	router.POST("/login", Login)
-	router.POST("/signup", SignUp)
-	router.POST("/logout", Logout)
 }

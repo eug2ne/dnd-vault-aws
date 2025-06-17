@@ -38,7 +38,7 @@ func (s *APIServer) Run() error {
 
 	// add handlers tp subrouter
 	api.RegisterRoutes(api_router)
-	user.RegisterRoutes(user_router)
+	user.RegisterRoutes(user_router, s.db_client)
 
 	// TODO: need to set path + add handler to dm_router, player_router
 	// TODO: or just set dm/player path to router?
